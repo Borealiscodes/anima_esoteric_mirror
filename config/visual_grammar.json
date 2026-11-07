@@ -1,0 +1,40 @@
+{
+  "concentric_matrix_lattice": {
+    "version": "2.2-Sovereign",
+    "topology": {
+      "num_nodes": 9,
+      "dimension_space": "Complex_9x9"
+    },
+    "states": {
+      "dormant": {
+        "signature": "Śānta_Equilibrium",
+        "vfe_tension_max": 1.0,
+        "flop_budget_per_step": 45,
+        "power_profile_watts": 0.05,
+        "radial_diffusion_alpha": "sparse_wireframe",
+        "haptic_feedback_multiplier": 0.0
+      },
+      "active": {
+        "signature": "Allostatic_Flow",
+        "vfe_tension_max": 4.5,
+        "flop_budget_per_step": 210,
+        "power_profile_watts": 0.35,
+        "radial_diffusion_alpha": "dense_concentric_mandala",
+        "haptic_feedback_multiplier": 1.0
+      }
+    },
+    "boundary_protection": {
+      "circuit_breaker": {
+        "trigger_variable": "vfe_tension",
+        "hard_threshold": 4.5,
+        "failure_mode": "allostatic_phase_lock"
+      },
+      "h_safe_insulation": {
+        "epsilon_boundary": 1e-06,
+        "theta_max_clipping": 2.35619,
+        "amplitude_envelope_floor": 0.0,
+        "amplitude_envelope_ceil": 1.0
+      }
+    }
+  }
+}
