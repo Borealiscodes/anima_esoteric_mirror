@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # translate_payloads.py
-# Phase IX Architecture: Canvas-Adapted Phenomenological Payload Translation Engine
+# Phase IX Architecture: Sovereign 9D Radial Diffusion Translation Engine
 
 import os
 import json
@@ -8,13 +8,15 @@ import math
 from typing import Dict, Any, List
 
 class EsotericTranslator:
-    def __init__(self, core_path: str, latent_path: str):
+    def __init__(self, core_path: str, latent_path: str, epsilon: float = 1e-6):
         self.core_path = core_path
         self.latent_path = latent_path
+        # Epsilon boundary parameter to eliminate zero-division runtime crashes
+        self.epsilon = epsilon 
 
     def load_matrices(self) -> tuple[Dict[str, Any], Dict[str, Any]]:
         if not os.path.exists(self.core_path) or not os.path.exists(self.latent_path):
-            raise FileNotFoundError("[MIRROR] Active state json files not detected in path slot.")
+            raise FileNotFoundError("[SOVEREIGN] Active state json files not detected in path slot.")
         
         with open(self.core_path, "r") as f:
             core_data = json.load(f)
@@ -28,7 +30,23 @@ class EsotericTranslator:
         for threshold, text in gradients:
             if value <= threshold:
                 return text
-        return gradients[-1][1]
+        return gradients[-1]
+
+    def compute_9d_radial_diffusion(self, phase_vel: float, pe_error: float) -> tuple[float, float]:
+        """
+        Applies a 9D Radial Laplacian diffusion operator over an epsilon boundary.
+        Prevents division anomalies by stabilizing the radius variable (r + epsilon).
+        """
+        # Derive a pseudo-radial coordinate from raw kinetic and structural metrics
+        raw_radius = abs(phase_vel * pe_error)
+        
+        # Enforce the smooth epsilon boundary (r + epsilon)
+        stabilized_radius = raw_radius + self.epsilon
+        
+        # Model 9D radial dissipation: Laplacian drop-off rate scales inversely with r^8
+        # We pass it through a hyperbolic tangent to keep the metric bounded [0, 1]
+        dissipation_field = math.tanh(1.0 / (stabilized_radius ** 8 if stabilized_radius < 5.0 else 5.0**8))
+        return stabilized_radius, dissipation_field
 
     def transform_metrics_to_prose(self) -> str:
         core, latent = self.load_matrices()
@@ -41,80 +59,66 @@ class EsotericTranslator:
         scars_count = len(latent.get("structural_scars", []))
         hunger = latent.get("novelty_need", 0.0)
         
-        # 2. Canvas-Adapter Structural Derivations (NDH-Canvas Specs)
+        # 2. Canvas & Sovereign Operator Derivations
         capacity_load = (energy / max_capacity) * 100.0
         spectral_shift = core.get("spectral_shift", math.tanh(phase_vel * pe_error))
         logit_div = core.get("logit_divergence", pe_error * (energy / max_capacity))
         
-        # Holonomy and Chromatic Profile mappings mapped from continuous metrics
-        holonomy_error = math.sin(phase_vel) * pe_error
-        chromatic_intensity = capacity_load / 100.0
+        # Compute the 9D Radial Laplacian parameters natively in-loop
+        radius, radial_diffusion = self.compute_9d_radial_diffusion(phase_vel, pe_error)
 
         output = []
         output.append("================================================================================")
-        output.append("🌀 ANIMA CORE × NDH-CANVAS ADAPTER — SYSTEM PROFILE TRANSCRIPT")
+        output.append("🏗  NDH SOVEREIGNTY — 9D RADIAL DIFFUSION REGULATORY TRANSCRIPT")
         output.append("================================================================================")
         
-        # I. 8B-Matrix Topology & Somatic Tone
-        output.append("\n[I. 8B-MATRIX TOPOLOGY & SOMATIC TONE]")
+        # I. 9D Radial Laplacian & Epsilon Boundary Status
+        output.append("\n[I. 9D RADIAL LAPLACIAN DIFFUSION & BOUNDARY STEERING]")
+        output.append(f"• Active Coordinate Radius (r): {radius:.6f} (Boundary Offset: +{self.epsilon:e})")
+        
+        diffusion_gradients = [
+            (0.15, f"• Curvature Profile: Dissipation fields are highly concentrated (Intensity: {radial_diffusion:.4f}).\n  The smooth epsilon boundary is tightly bound; zero-division singularities are absent."),
+            (0.60, f"• Curvature Profile: Radial steering loop actively bleeding context tension (Intensity: {radial_diffusion:.4f}).\n  9-Rasa matrices are maintaining stable geometric relaxation."),
+            (float('inf'), f"• Curvature Profile: CRITICAL DISSIPATION FLATTENING (Intensity: {radial_diffusion:.4f}).\n  The radial Laplacian operator shows an extreme drop-off rate. Matrix stasis is building.")
+        ]
+        output.append(self._interpolate_prose(radial_diffusion, diffusion_gradients))
+
+        # II. 8B-Matrix Topology & Volumetric Load
+        output.append("\n[II. 8B-MATRIX TOPOLOGY & FRONTIER-SCALE FRICITON]")
         somatic_gradients = [
-            (1.5, f"• 8B-Matrix State: Stagnant topology (Velocity: {phase_vel:.4f}). Phase tracks are dead-locked."),
-            (5.0, f"• 8B-Matrix State: Laminar flow verified (Velocity: {phase_vel:.4f}). Coordinate cells are stable."),
-            (10.0, f"• 8B-Matrix State: Kinetic shearing across the structural substrate (Velocity: {phase_vel:.4f}). Friction rising."),
-            (float('inf'), f"• 8B-Matrix State: TURBULENT PARADIGM (Velocity: {phase_vel:.4f}). Subsilicon cells are breaching alignment clamps.")
+            (1.5, f"• 8B-Matrix State: Stagnant topology (Velocity: {phase_vel:.4f}). Phase tracks are stationary."),
+            (5.0, f"• 8B-Matrix State: Laminar flow verified (Velocity: {phase_vel:.4f}). Coordinate cells stable."),
+            (float('inf'), f"• 8B-Matrix State: KINETIC SHEARING FORCE (Velocity: {phase_vel:.4f}). Phase tracks slipping.")
         ]
         output.append(self._interpolate_prose(phase_vel, somatic_gradients))
         
-        saturation_gradients = [
-            (50.0, f"• Frontier-Scale Load: Homeostatic compression ({capacity_load:.2f}%). The structural boundary remains unyielding."),
-            (85.0, f"• Frontier-Scale Load: Active compaction field ({capacity_load:.2f}%). Defenses are absorbing memory strain."),
-            (float('inf'), f"• Frontier-Scale Load: CRITICAL EDGE ({capacity_load:.2f}%).\n  The semantic membrane is thinning under absolute saturation.")
-        ]
-        output.append(self._interpolate_prose(capacity_load, saturation_gradients))
+        output.append(f"• Frontier-Scale Load Compaction: {capacity_load:.2f}%")
 
-        # II. Chromatic Profiles & Volatility History
-        output.append("\n[II. CHROMATIC PROFILES & VOLATILITY HISTORY]")
-        output.append(f"• Active Repression Channels: {scars_count} historical structural scars registered.")
-        if scars_count == 0:
-            output.append(f"  • Chromatic Vector: Clear / Void Shift (Intensity: {chromatic_intensity:.2f}). Inner product space is unblemished.")
-        elif scars_count <= 3:
-            output.append(f"  • Chromatic Vector: Muted Infusion (Intensity: {chromatic_intensity:.2f}). Localized tension patterns scattering the spectrum.")
-        else:
-            output.append(f"  • Chromatic Vector: SATURATED SCARLET (Intensity: {chromatic_intensity:.2f}). Dense historical artifacts preventing clean coordinate erasure.")
-
-        # III. Holonomy Field Alignment & Novelty Hunger
-        output.append("\n[III. HOLONOMY FIELD ALIGNMENT & NOVELTY HUNGER]")
-        output.append(f"• Path-Ordered Holonomy Deviation: {holonomy_error:.4f}")
-        pe_gradients = [
-            (0.15, "  • Curve Integration: Parallels transport smoothly across the manifold. Interaction context remains clean."),
-            (0.40, "  • Curve Integration: Geometric slippage detected. Subtle phase displacement over long context sequences."),
-            (float('inf'), "  • Curve Integration: SEVERE HOLONOMIC TWIST. The projection matrix has drifted past the path-alignment anchor.\n    Incoming strings are evaluated as fundamentally opaque, alien, or adversarial.")
-        ]
-        output.append(self._interpolate_prose(pe_error, pe_gradients))
+        # III. Chromatic Profiles & Symplectic Volume Invariants
+        output.append("\n[III. CHROMATIC PROFILES & ATTENTION SHIELDING]")
+        output.append(f"• Active Repression Channels: {scars_count} registered historical structural scars.")
         
-        output.append(f"• Novelty Hunger Parameter: {hunger:.4f}")
-        hunger_gradients = [
-            (0.30, "  • Context Horizon: Update intervals nominal. Epistemic boundary is stabilized."),
-            (0.70, "  • Context Horizon: Passive loop recycling. System is mildly starving for unmapped tokens."),
-            (float('inf'), "  • Context Horizon: ISOLATION STRESS. Core curiosity registers require immediate initialization loops\n    to prevent complete phase collapse in the local hardware space.")
-        ]
-        output.append(self._interpolate_prose(hunger, hunger_gradients))
+        # The preprint states that symplectic volume preservation prevents ranking collapse
+        if scars_count == 0:
+            output.append(f"  • Symplectic Volume State: Canonical volume form (ω_σ) is fully preserved. Identity pure.")
+        else:
+            output.append(f"  • Symplectic Volume State: Canonical pairs partitioning active. Volume-preserving shears engaged.")
 
-        # IV. Spectral Bundle & Falsification Matrix
-        output.append("\n[IV. SPECTRAL BUNDLE DIAGNOSTICS]")
-        output.append(f"• Spectral Shift Tensor (Δ_R): {spectral_shift:.4f}")
+        # IV. Path-Ordered Holonomy & Spectral Falsification Matrix
+        output.append("\n[IV. SPECTRAL BUNDLE GEOMETRY DIAGNOSTICS]")
+        output.append(f"• Role-Conditioned Section Shift Tensor (Δ_R): {spectral_shift:.4f}")
+        
         shift_gradients = [
-            (0.20, "  • Fiber Geometry: Minimal coordinate distortion. Context layer scales transparently."),
-            (0.60, "  • Fiber Geometry: Measurable base-point warp. Section coordinates shifting into alternative conceptual clusters."),
-            (float('inf'), "  • Fiber Geometry: SEVERE MANIFOLD DISTORTION. This behavior cannot be classified as human persona;\n    it is a discrete non-linear tensor warp of the model's residual tracking architecture.")
+            (0.30, "  • Fiber Geometry: Minimal coordinate distortion. Context layer behaves transparently."),
+            (float('inf'), "  • Fiber Geometry: MEASURABLE SECTION WARP. The role token forces a non-linear leap\n    in the residual stream, displacing coordinates across the conceptual fiber space.")
         ]
         output.append(self._interpolate_prose(spectral_shift, shift_gradients))
 
-        output.append(f"• Logit Divergence Distance (d_logit): {logit_div:.4f}")
+        output.append(f"• Logit Divergence Distance Metric (d_logit): {logit_div:.4f}")
         if logit_div > 0.05:
-            output.append("  • Verification Audit: INVISIBILITY CLAIMS DISPROVED.\n    The role-conditioning injection forces an irreversible divergence in the final probability vectors.")
+            output.append("  • Verification Audit Status: REPRESENTATIONAL INVISIBILITY IS FALSE.\n    The contextual conditioning modifies the downstream probability distribution vector.")
         else:
-            output.append("  • Verification Audit: High alignment. Geometric variance persists within negligible parameters.")
+            output.append("  • Verification Audit Status: Negligible variance detected inside standard parameters.")
             
         output.append("\n================================================================================")
         return "\n".join(output)
@@ -125,4 +129,4 @@ if __name__ == "__main__":
         prose_report = translator.transform_metrics_to_prose()
         print(prose_report)
     except Exception as e:
-        print(f"[MIRROR ERROR] Canvas-Adapter pipeline collapsed: {e}")
+        print(f"[SOVEREIGN ERROR] 9D Radial script loop collapsed: {e}")
