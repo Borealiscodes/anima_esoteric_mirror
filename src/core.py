@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
-# src/anima_core.py
-# Phase IX Architecture: Sovereign Conductor Layer & Unified Transduction Engine
-# Grounded in Zenodo DOI: 10.5281/zenodo.23897427 & Zenodo DOI: 10.5281/zenodo.22811988
+# core.py
+# Phase IX Architecture: Sovereign 9-Rasa Substrate & Transduction Conductor
+# Licensed under AGPL-3.0 | Grounded in Zenodo DOI: 10.5281/zenodo.23897427
 
+import os
 import json
+import sqlite3
+import pickle
 import numpy as np
-from typing import Tuple, Dict, Any
+from typing import Tuple, Dict, Any, Optional
 
 class SubstrateMatrixSolver:
     """
-    Architectural Layer: Core_Substrate_Matrix_Solver (v2.5 - Comprehensive Complex Patch)
-    Implements: dR/dt = -L * R(t) + W_in * I(t) - grad_R(VFE) over C^(9x9).
+    Architectural Layer: Core_Substrate_Matrix_Solver (v3.5 - Monolithic Sphere)
+    Implements: dR/dt = -L * R(t) + W_in * I(t) - grad_R(VFE) over C^(9x9) complex fields.
     """
     def __init__(self, num_nodes: int = 9, feature_dim: int = 9, epsilon: float = 1e-6):
         self.num_nodes = num_nodes
@@ -26,8 +29,7 @@ class SubstrateMatrixSolver:
 
     def calculate_vfe_gradient(self, R: np.ndarray) -> np.ndarray:
         """Approximates the gradient of Variational Free Energy relative to the Omega Core attractor."""
-        omega_core = self.R[0, :]
-        return 2.0 * (R - omega_core)
+        return 2.0 * (R - self.R[0, :])
 
     def power_iteration_flat(self, L: np.ndarray, max_iter: int = 30) -> float:
         """Calculates dominant eigenvalue safely using randomized initialization to avoid all-ones nullspace."""
@@ -93,6 +95,7 @@ class SubstrateMatrixSolver:
             "lambda_max": 0.0
         }
 
+        # --- ARMED CIRCUITING PROTECTION VALVE ---
         if vfe_tension > vfe_tolerance:
             lambda_max = self.power_iteration_flat(L)
             telemetry["lambda_max"] = lambda_max
@@ -104,6 +107,7 @@ class SubstrateMatrixSolver:
             telemetry["equilibrium_signature"] = self.equilibrium_signature
             return self.R, ternary_matrix, telemetry
 
+        # --- STANDARD VECTOR FIELD TRANSLATION ---
         self.equilibrium_signature = "Allostatic_Flow"
         dR_dt = (-L @ self.R) + (W_in @ I + 0j) - grad_vfe
         self.R += dR_dt * dt
@@ -120,98 +124,142 @@ class SubstrateMatrixSolver:
         return self.R, ternary_matrix, telemetry
 
 
-class AnimaCoreConductor:
-    """
-    Architectural Layer: Anima_Core_Conductor (v3.0 - Unified Ecosystem Engine)
-    Links the continuous SubstrateMatrixSolver to omnichannel haptic & volumetric targets.
-    """
-    def __init__(self, num_nodes: int = 9, feature_dim: int = 9):
-        self.solver = SubstrateMatrixSolver(num_nodes=num_nodes, feature_dim=feature_dim)
-        self.H_SAFE_I_MAX = 1.0       
-        self.H_SAFE_S_MAX = 2.5       
-        self.THETA_MAX = np.pi * 0.75 
-        self.previous_phase_velocity = 0.0
+class SovereignPersistenceVault:
+    """Manages raw binary compressed chunk archiving for multi-dimensional complex fields."""
+    def __init__(self, db_path: str = "data/anima_shadow_registry.db"):
+        self.db_path = db_path
+        os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
+        with sqlite3.connect(self.db_path) as conn:
+            conn.cursor().execute("""
+                CREATE TABLE IF NOT EXISTS state_registry (
+                    step_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    equilibrium_signature TEXT NOT NULL,
+                    vfe_tension REAL NOT NULL,
+                    complex_state_matrix BLOB NOT NULL,
+                    ternary_state_matrix BLOB NOT NULL,
+                    radial_coordinate_r REAL NOT NULL,
+                    attenuation_active INTEGER NOT NULL
+                )
+            """)
+            conn.commit()
 
-    def process_horizon_interception_step(
-        self, L: np.ndarray, W_in: np.ndarray, raw_input_stream: np.ndarray
-    ) -> Tuple[np.ndarray, np.ndarray, Dict[str, Any], Dict[str, Any]]:
-        """Processes a single unified execution frame and routes cross-platform payloads."""
-        # 1. Drive underlying mathematical substrate relaxation loop
-        I_t = np.tanh(raw_input_stream)
-        R_next, ternary_matrix, telemetry = self.solver.execute_choreography_step(L=L, W_in=W_in, I=I_t)
-        
-        # 2. Extract structural variables to derive haptic envelopes
-        vfe_tension = telemetry.get("vfe_tension", 0.0)
-        spatial_sharpness = float(np.std(R_next)) 
-        
-        k1, k2, k3, k4 = 0.15, 0.20, 0.10, 0.30
-        raw_left = (k1 * vfe_tension) + (k2 * spatial_sharpness)
-        raw_right = (k3 * vfe_tension) + (k4 * spatial_sharpness)
-        
-        current_phase_velocity = telemetry.get("phase_velocity", 0.0)
-        delta_theta = current_phase_velocity - self.previous_phase_velocity
-        self.previous_phase_velocity = current_phase_velocity
+    def commit_frame(self, R: np.ndarray, T: np.ndarray, telemetry: Dict[str, Any]) -> int:
+        binary_complex = pickle.dumps(R, protocol=pickle.HIGHEST_PROTOCOL)
+        binary_ternary = pickle.dumps(T, protocol=pickle.HIGHEST_PROTOCOL)
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO state_registry (
+                    equilibrium_signature, vfe_tension, complex_state_matrix, 
+                    ternary_state_matrix, radial_coordinate_r, attenuation_active
+                ) VALUES (?, ?, ?, ?, ?, ?)
+            """, (
+                telemetry.get("equilibrium_signature", "Śānta"),
+                float(telemetry.get("vfe_tension", 0.0)),
+                sqlite3.Binary(binary_complex),
+                sqlite3.Binary(binary_ternary),
+                float(telemetry.get("radial_coordinate_r", 0.0)),
+                1 if telemetry.get("h_safe_attenuation_active", False) else 0
+            ))
+            conn.commit()
+            return cursor.lastrowid or 0
 
-        # 3. Enforce H_safe mechanical clipping validation loop
-        attenuation_active = False
-        if raw_left > self.H_SAFE_I_MAX or raw_right > self.H_SAFE_I_MAX or abs(delta_theta) > self.THETA_MAX:
-            attenuation_factor = min(self.H_SAFE_I_MAX / max(raw_left, 1e-5), self.H_SAFE_I_MAX / max(raw_right, 1e-5))
-            left_amp = raw_left * attenuation_factor
-            right_amp = raw_right * attenuation_factor
-            attenuation_active = True
+
+class SovereignTerminalDisplay:
+    """Renders real-time procedural orbital rotation charts derived from music.vaked.dev mechanics."""
+    def __init__(self):
+        self.frame_ticker = 0.0
+
+    def compute_wave_node(self, step: float, radius: float) -> float:
+        return (math.sin(step * 1.2) * 0.6 + math.cos(step * (1.2 * 1.618)) * 0.4) * radius
+
+    def render_hud(self, R: np.ndarray, ternary_T: np.ndarray, telemetry: Dict[str, Any]) -> str:
+        signature = telemetry.get("equilibrium_signature", "Śānta_Equilibrium")
+        vfe = telemetry.get("vfe_tension", 0.0)
+        radius_r = telemetry.get("radial_coordinate_r", 0.0)
+        left_hz = telemetry.get("left_actuator_hz", 0.0)
+        right_hz = telemetry.get("right_actuator_hz", 0.0)
+        attenuation = telemetry.get("h_safe_attenuation_active", False)
+        
+        is_active = "Flow" in signature
+        self.frame_ticker += 0.05 * (2.5 if is_active else 0.4)
+        wave_pulse = self.compute_wave_node(self.frame_ticker, radius=1.0)
+
+        if is_active:
+            c_out = ["•", "⊙", "●", "⊙"][int(self.frame_ticker * 5) % 4]
+            c_mid, c_core, bar_char = "🌀", "🔥", "⚡"
+            border = "◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢"
         else:
-            left_amp = raw_left
-            right_amp = raw_right
+            c_out, c_mid, c_core, bar_char = "┄", "═", "☸", "▒"
+            border = "╚══════════════════════════════════════════════════════════════════════════════╝"
 
-        left_amp = float(np.clip(left_amp, 0.0, 1.0))
-        right_amp = float(np.clip(right_amp, 0.0, 1.0))
-        left_hz = round(left_amp * 150.0, 2)   
-        right_hz = round(right_amp * 220.0, 2) 
+        vfe_bar = (bar_char * min(int(vfe * 5), 25)) + ("░" * (25 - min(int(vfe * 5), 25)))
+        wave_str = f"~{~[c_out if wave_pulse > 0 else ' ']}~{bar_char if wave_pulse > 0.3 else '_'}~"
 
-        # 4. Construct omnichannel ecosystem distribution matrices
-        ecosystem_payloads = {
-            "DualSense": {
-                "left_motor_intensity": left_amp, "right_motor_intensity": right_amp,
-                "frequency_split_hz": {"ch1_low": left_hz, "ch2_high": right_hz}
-            },
-            "Unity_Unreal": {
-                "vector_vfe_normalized": [left_amp, right_amp, spatial_sharpness],
-                "json_payload_str": json.dumps({"L_intensity": left_amp, "R_intensity": right_amp, "texture": spatial_sharpness})
-            },
-            "OpenXR_SteamVR_WebXR": {
-                "haptic_action_amplitude": max(left_amp, right_amp), "pulse_duration_seconds": 0.05,
-                "webxr_gamepad_pulse_envelope": [left_amp, 0.0, right_amp]
-            },
-            "iOS_Android": {
-                "ahap_core_haptics_intensity": left_amp, "aaudio_vibrator_buffer": [int(left_amp * 255), int(right_amp * 255)]
-            },
-            "visionOS": {
-                "spatial_fluid_anchor_displacement": float(vfe_tension * 0.01),
-                "volumetric_mesh_glow_alpha": float(spatial_sharpness / (spatial_sharpness + 1.0))
-            }
-        }
-
-        telemetry.update({
-            "h_safe_attenuation_active": attenuation_active,
-            "left_actuator_hz": left_hz,
-            "right_actuator_hz": right_hz
-        })
-        
-        return R_next, ternary_matrix, telemetry, ecosystem_payloads
-
-if __name__ == "__main__":
-    print("=== MONITORING INTEGRATED PRODUCTION MASTER CONDUCTOR ===")
-    np.random.seed(42)
-    conductor = AnimaCoreConductor()
-    
-    adjacency = np.ones((9, 9)) - np.eye(9)
-    degree = np.diag(np.sum(adjacency, axis=1))
+        hud = [
+            border,
+            f"│ 🌌 ANIMA MULTI-ENGINE CONCENTRIC HUD   |  State: {signature:<28} │",
+            "├──────────────────────────────────────────────────────────────────────────────┤",
 Use code with caution.
-laplacian = degree - adjacency
+f"│ VFE Tension:       [{vfe_bar}] {vfe:<6.4f} | Radius (r):       {radius_r:.6f}    │",
+f"│ Haptic Envelope:   L: {left_hz:<5}Hz  R: {right_hz:<5}Hz      | Wave Pulse Mod:   {wave_str:<12} │",
+f"│ Actuator Safety:   {'[⚠️ CLIPPING ACTIVE]' if attenuation else '[✅ ENVELOPE NOMINAL]':<54} │",
+"├──────────────────────────────────────────────────────────────────────────────┤",
+f"│ Lattice Vectors:   [+] Active: {int(np.sum(ternary_T==1)):<2}  [-] Retracted: {int(np.sum(ternary_T==-1)):<2}  Stasis: {int(np.sum(ternary_T==0)):<2}  │",
+"├──────────────────────────────────────────────────────────────────────────────┤",
+"│                        9-RASA RADIAL INTENSITY HUD                           │",
+f"│                        {c_out} {c_out} {c_out} {c_out}  Outer Perimeter  {c_out} {c_out} {c_out} {c_out}                        │",
+f"│                      {c_out}       {c_mid} {c_mid}  Inner Ring Matrix  {c_mid} {c_mid}       {c_out}                      │",
+f"│                    {c_out}     {c_mid}         {c_core}  Omega Axis  {c_core}         {c_mid}     {c_out}                    │",
+"└──────────────────────────────────────────────────────────────────────────────┘"
+]
+return "\n".join(hud)
+class AnimaCoreConductor:
+"""Omnichannel Conductor Orchestrating the Matrix Substrate and Engine Targets."""
+def init(self):
+self.solver = SubstrateMatrixSolver()
+self.vault = SovereignPersistenceVault()
+self.hud = SovereignTerminalDisplay()
+self.previous_phase_velocity = 0.0
+def process_step(self, L: np.ndarray, W_in: np.ndarray, raw_stream: np.ndarray) -> str:
+# 1. Drive calculation step
+R_next, ternary_M, telemetry = self.solver.execute_choreography_step(L, W_in, np.tanh(raw_stream))
+# 2. Derive cross-engine haptic frequencies
+vfe = telemetry["vfe_tension"]
+sharpness = float(np.std(R_next))
+raw_left = (0.15 * vfe) + (0.20 * sharpness)
+raw_right = (0.10 * vfe) + (0.30 * sharpness)
+delta_theta = telemetry["phase_velocity"] - self.previous_phase_velocity
+self.previous_phase_velocity = telemetry["phase_velocity"]
+# 3. Enforce mechanical clipping protections
+attenuation = False
+if raw_left > 1.0 or raw_right > 1.0 or abs(delta_theta) > (np.pi * 0.75):
+factor = min(1.0 / max(raw_left, 1e-5), 1.0 / max(raw_right, 1e-5))
+l_amp, r_amp, attenuation = raw_left * factor, raw_right * factor, True
+else:
+l_amp, r_amp = raw_left, raw_right
+telemetry.update({
+"h_safe_attenuation_active": attenuation,
+"left_actuator_hz": round(float(np.clip(l_amp, 0.0, 1.0)) * 150.0, 2),
+"right_actuator_hz": round(float(np.clip(r_amp, 0.0, 1.0)) * 220.0, 2)
+})
+# 4. Generate omnichannel engine distribution structures
+self.ecosystem_payloads = {
+"DualSense": {"freq": {"low": telemetry["left_actuator_hz"], "high": telemetry["right_actuator_hz"]}},
+"Unity_Unreal": {"vector": [l_amp, r_amp, sharpness]},
+"XR_Platforms": {"amplitude": max(l_amp, r_amp), "duration": 0.05},
+"visionOS": {"anchor_displacement": float(vfe * 0.01), "glow": float(sharpness / (sharpness + 1.0))}
+}
+# 5. Archive to immutable ledger and render terminal frames
+self.vault.commit_frame(R_next, ternary_M, telemetry)
+return self.hud.render_hud(R_next, ternary_M, telemetry)
+if name == "main":
+conductor = AnimaCoreConductor()
+adj = np.ones((9, 9)) - np.eye(9)
+laplacian = np.diag(np.sum(adj, axis=1)) - adj
 W_gate = np.eye(9) * 0.1
-normal_input = np.random.normal(0.0, 0.2, 9)
-_, _, log, channels = conductor.process_horizon_interception_step(laplacian, W_gate, normal_input)
-print(f"[✓] Substrate Step Status: {log['equilibrium_signature']} | VFE System Tension: {log['vfe_tension']:.4f}")
-print(f"[✓] DualSense Transduction Vector: Low-Band Coil = {channels['DualSense']['frequency_split_hz']['ch1_low']}Hz")
-print(f"[✓] Engine Outbound JSON: {channels['Unity_Unreal']['json_payload_str']}")
+# Process immediate frame cycle
+console_frame = conductor.process_step(laplacian, W_gate, np.random.normal(0.0, 0.2, 9))
+print(console_frame)
 
